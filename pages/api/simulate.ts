@@ -12,6 +12,9 @@ export default async function handler(
 ) {
     // get the environment variable
     const {SIMC_SERVER} = process.env
+    const options = {timeout: 1000000}
+    const controller = new AbortController()
+    const id = setTimeout(() => controller.abort(), options.timeout)
     const resp = await fetch(`http://${SIMC_SERVER}:8000`, {
         method: "POST",
         headers: {
@@ -19,7 +22,10 @@ export default async function handler(
             "Sent-From-SimC": "true",
         },
         body: JSON.stringify(req.body),
+        signal: controller.signal,
+        ...options,
     })
+    clearTimeout(id)
     if (resp.ok) {
         const data = await resp.json()
         res.status(200).json({ data: data.data, link: data.link })
