@@ -82,15 +82,21 @@ export default function Index() {
 
   useEffect(() => {
     const do_simulation = async () => {
+      const options = {timeout: 1000000}
+      const controller = new AbortController()
+      const id = setTimeout(() => controller.abort(), options.timeout)
       const resp = await fetch("/api/simulate", {
+        ...options,
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
           simc: simcText
-        })
+        }),
+        signal: controller.signal
       })
+      clearTimeout(id)
       if (resp.ok) {
         const data = await resp.json()
         setSimcHTML(data.data)
